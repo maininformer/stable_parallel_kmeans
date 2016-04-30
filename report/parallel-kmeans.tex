@@ -80,8 +80,9 @@ Ben-Hur et al. \cite{ben2001} propose an algorithm that uses stability of cluste
 
 \section{Experiments} \label{section:experiments}
 
-We compare the algorithms using data from a dialect survey, which includes linguistic binary encoded responses \cite{vaux2003}. The purpose of the survey is to figure whether a stable number of clusters can be found across the survey participants. We implement the serial and parallel stability-based methods in Python and run all implementations on Edison. Performance is evaluated on three dimensions -- clustering cost, running time, and space complexity -- for different values of $k$.
+We compare the algorithms using data from a dialect survey, which includes linguistic binary encoded responses \cite{vaux2003}. The linguistic survey data can be used to study dialectometry, or linguistic variations with spatially determined distributions. These data, which feature questions on lexical choice and pronunciation, can be used to identify dialect areas and to determine whether linguistic diversity is isolated or a transitional area between areas of linguistic uniformity. 
 
+We implement the serial and parallel stability-based methods in Python and run all implementations on Edison. Performance is evaluated on three dimensions -- clustering cost, running time, and space complexity -- for different values of $k$.
 
 \begin{figure*}[htbp] 
    \centering
@@ -90,6 +91,25 @@ We compare the algorithms using data from a dialect survey, which includes lingu
    \label{fig:serial}
 \end{figure*}
 
+\subsection{Choice of clusters} 
+
+Figure~\ref{fig:cumulative_similarity} plots the overlay of the cumulative distributions of the similarity scores for varying values of $k$. We see that the distribution of similarities for each $k$ are similar and close to 1. A choice of any number of clusters between $2 \leq k \leq 10$ would be reasonable;  however, the choice of $k=2$ appears to be the optimal choice. At $k=2$, the cumulative distribution converges toward unity faster than the other distributions. 
+
+\begin{figure*}[htbp] 
+   \centering
+   \includegraphics[width=0.8\textwidth]{./figure/cumulative_similarity.pdf}
+   \caption{Overlay of the cumulative distributions of the correlation similarity measure for $n=100$ runs and increasing values of $k$}
+   \label{fig:cumulative_similarity}
+\end{figure*}
+
+In order to determine the appropriate number of clusters, Figure~\ref{fig:scree_plot} Figure 3 plots the within--group sum of squares for $k \leq 25$ clusters. We choose $k=16$ clusters because the within--groups sum of squares (WSS) do not decrease much after $k=16$. While the location of the ``elbow''  is ambiguous, it is clear that the greatest difference in reducing WSS happens when $k$ moves from 1 to 2 and that the reduction of WSS diminishes after $k=2$. 
+
+\begin{figure*}[htbp] 
+   \centering
+   \includegraphics[width=0.8\textwidth]{./figure/scree_plot.pdf}
+   \caption{Sum of squared error scree plot of linguistic data. The location of the elbow in the plot suggests a suitable number of clusters for the k--means.}
+   \label{fig:scree_plot}
+\end{figure*}
 
 \section{Conclusion} \label{section:Con}
 
