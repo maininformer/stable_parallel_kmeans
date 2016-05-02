@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.cluster import KMeans
+import pathos.multiprocessing as mp
 import copy
 import time
 
@@ -14,29 +15,39 @@ class SKMeans(object):
         self.number_of_subsamples = number_of_subsamples
         self.scores = scores = dict((k,copy.deepcopy([])) for k in range(2,k_max))
 
-    def fit(self, verbose = True):
+    def fit(self, n_jobs = 1, verbose = True):
+        pool = mp.ProcessingPool(processes=n_jobs)
         for k in range(2,self.k_max):
             t = time.time()
-            for iteration in range(self.number_of_subsamples):
-                subsample_1 = self.subsample()
-                subsample_2 = self.subsample()
+            for iteration in range(max(int(self.number_of_subsamples/n_jobs), 1)):
+                # max becasuse if number of subsamples is smaller than jobs all will be 0
+                #the fact that not everyprocess is entering its own score might be a bottle neck
 
-                C = self.intersect(subsample_1,subsample_2)
-
-                labels_1 = self.cluster(subsample_1, k)
-                labels_2 = self.cluster(subsample_2, k)
-
-                common_labels_1, common_labels_2 = self.find_common_elements(C, labels_1, labels_2)
-
-                labels_score_1 = self.intersect_labels(common_labels_1)
-                labels_score_2 = self.intersect_labels(common_labels_2)
-
-                score = self.do_cosine(labels_score_1, labels_score_2)
-
-                self.scores[k].append(score)
+                self.scores[k].extend(pool.map(self._loop,[k for i in range(n_jobs)]))
 
             if verbose:
                 print "K={0} done in {1:.2f} seconds \n".format(k,time.time()-t)
+
+
+    def _loop(self,k):
+        subsample_1 = self.subsample()
+        subsample_2 = self.subsample()
+
+        C = self.intersect(subsample_1,subsample_2)
+
+        labels_1 = self.cluster(subsample_1, k)
+        labels_2 = self.cluster(subsample_2, k)
+
+        common_labels_1, common_labels_2 = self.find_common_elements(C, labels_1, labels_2)
+
+        labels_score_1 = self.intersect_labels(common_labels_1)
+        labels_score_2 = self.intersect_labels(common_labels_2)
+
+        score = self.do_cosine(labels_score_1, labels_score_2)
+
+        #self.scores[k].append(score)
+        return score
+
 
     def subsample(self):
         """First call this, Input: data and percent to subsample, returns random subsample"""
