@@ -23,7 +23,7 @@ Jason Poulos \hspace{5mm}  \url{poulos@berkeley.edu}  }
 
 \begin{document}
 
-\section*{Introduction} \label{section:Intro}
+%\section*{Introduction} \label{section:Intro}
 
 $k$-means is a popular unsupervised learning algorithm for finding clusters and cluster centers in data. The goal is to choose $k$ cluster centers to minimize the total squared distance between each data point and its closest center. One method to determine the optimal number of clusters is stability. Assessing stability requires multiple runs of $k$-means, which will make it computationally very expensive.
 
@@ -92,10 +92,10 @@ the data\}
 
 With the existence
 of GIL we get a cooperative multitasking as shown in Figure \ref{fig:Cooperative-multitasking-with}.
-When a thread is running it is holding the GIL and the GIL is released
-upon I/O commands such as read, write, send, receive etc. Thus the
-merit of multithreading will be apparent when the functions are I/O
-bound. 
+%When a thread is running it is holding the GIL and the GIL is released
+%upon I/O commands such as read, write, send, receive etc. Thus the
+%merit of multithreading will be apparent when the functions are I/O
+%bound. 
 
 \begin{figure}[H] 
 \includegraphics[width=\columnwidth]{/Users/jason/Dropbox/github/parallel_kmeans/report/figure/threads_IO.png}
@@ -116,7 +116,7 @@ there are special check for every 100 ``ticks'', see Figure \ref{fig:No-I/O-func
 \label{fig:No-I/O-function}
 \end{figure}
 
-In thread switching on a single core two cases can happen. %Assume
+In thread switching on a single core two cases can happen, which is illustrated in Figure \ref{fig:GIL-wars-on}. %Assume
 %we have two threads, with the first thread running. If at some point
 %the first thread has an I/O instruction, it will release the GIL and
 %the second thread will acquire it. However, if the first thread has
@@ -132,7 +132,7 @@ In thread switching on a single core two cases can happen. %Assume
 %universally, thread two takes some time to wake up to acquire the
 %lock, by which time thread one has acquired the lock and thread two,
 %failing at it's endeavors decides to sleep again. 
-An illustration is provided in Figure \ref{fig:GIL-wars-on}.
+%An illustration is provided in Figure \ref{fig:GIL-wars-on}.
 
 \begin{figure}[H] 
 \includegraphics[width=\columnwidth]{/Users/jason/Dropbox/github/parallel_kmeans/report/figure/threads_multicore.png}
@@ -166,7 +166,7 @@ deploy our code on multiple machines as well.
 We will run our algorithm and compare its results on a toy dataset
 of 500 samples and 2 features. The dataset is plotted in Figure \ref{fig:Dataset-that-will}. The dataset is obviously split into 5 clusters at most. Running the
 algorithm on this dataset will yield the following similarity scoring
-distribution (Figure \ref{fig:Histograms-of-Similarity}).
+distribution (Figure \ref{fig:Histograms-of-Similarity}). Figure \ref{fig:Serial-Run-Time} shows the baseline serial run time; Figure \ref{fig:Strong-and-Weak} shows the strong and weak scaling of the multithread and multiprocess algorithms; Figure \ref{fig:Speed-up-Comparison} below shows a comparison of the run time on the serial, concurrent (multithread) and parallel (multiprocess) code.
 
 \begin{figure}[H] 
 \includegraphics[width=\columnwidth]{/Users/jason/Dropbox/github/parallel_kmeans/report/figure/dataset.png}
@@ -179,8 +179,6 @@ distribution (Figure \ref{fig:Histograms-of-Similarity}).
 \caption{\label{fig:Histograms-of-Similarity}Histograms of Similarity scores
 for different ks.}
 \end{figure}
-
-%Figure \ref{fig:Serial-Run-Time} shows the baseline serial run time; Figure \ref{fig:Strong-and-Weak} shows the strong and weak scaling of the multithread and multiprocess algorithms; Figure \ref{fig:Speed-up-Comparison} below shows a comparison of the run time on the serial, concurrent (multithread) and parallel (multiprocess) code.
 
 \begin{figure}[H] 
 \includegraphics[width=\columnwidth]{/Users/jason/Dropbox/github/parallel_kmeans/report/figure/serial.png}
@@ -199,13 +197,20 @@ Multithreading and Multiprocessing}
 \caption{\label{fig:Speed-up-Comparison}Speed up Comparison}
 \end{figure}
 
+\begin{figure}[H] 
+\includegraphics[width=\columnwidth]{/Users/jason/Dropbox/github/parallel_kmeans/report/figure/Profiling.png}
+\caption{\label{fig:Profiling} Profiling Result}
+\end{figure}
+
 %\section*{Challenges and Future Directions} \label{challenges}
 
 %\section*{Conclusion} \label{conclusion}
 
 % References
+\begin{small}
 \begin{thebibliography}{5}
 \bibitem{ben2001} Ben-Hur, Asa and Elisseeff, Andre and Guyon, Isabelle. "A stability based method for discovering structure in clustered data." \emph{Pacific symposium on biocomputing} 7 (2001): 6-17.
 \end{thebibliography}
+\end{small}
 
 \end{document}
