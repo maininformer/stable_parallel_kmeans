@@ -83,7 +83,7 @@ We describe the serial version of \texttt{stable k-means} in Section \ref{sectio
 
 %Ben-Hur et al. \cite{ben2001} propose an algorithm that uses stability of clustering with respect to perturbations such as sub-sampling to generate meaningful partitions of the data. The algorithm receives as input a dataset or similarity matrix and a parameter $k_{max}$ that sets the maximum number of clusters the algorithm produces. The algorithm measures stability for each value of $k \in 1 \ldots k_{max}$ using the distribution of pairwise similarities between clusterings from sub-sampled data, where high pairwise similarities indicate stable clustering. The algorithm compares the distribution of pairwise similarities for different values of $k$, and the optimal $k$ is chosen using the maximum value of the average similarity. 
 
-Ben-Hur et al. \cite{ben2001} propose an algorithm for any clustering mechanism that will assess the stability of the points and thus let us infer the optimal number of clusters. The algorithm begins with subsampling the data twice with a ration more than half. It is believed that the general structure of the dataset is captured when subsampling with a ration bigger than a half. Then, for a given number of clusters, the two subsamples are clustered. The points in the intersection of the two subsamples are analyzed to see how many of them are clustered together in the same cluster in both subsamples. Then, depending on the number of the points clustered together in the intersection of both of the subsamples, a similarity score is calculated. We will use the correlation score for our application which is as follows.
+Ben-Hur et al. \cite{ben2001} propose an algorithm for any clustering mechanism that will assess the stability of the points and thus let us infer the optimal number of clusters. The algorithm begins with subsampling the data twice with a ration more than half. It is believed that the general structure of the dataset is captured when subsampling with a ration bigger than a half. Then, for a given number of clusters, the two subsamples are clustered. The points in the intersection of the two subsamples are analyzed to see how many of them are clustered together in the same cluster in both subsamples. Then, depending on the number of the points clustered together in the intersection of both of the subsamples, a similarity score is calculated. We will use the correlation score for our application.
 
 Let labeling $\mathcal{L}$ be a partition of $X$ into $k$ subsets $S_1, S_2, ... , S_k$. In that case the correlation score between the clustering of intersection of two subsamples is given by: 
 
@@ -257,10 +257,8 @@ distribution (Figure \ref{fig:Histograms-of-Similarity}).
 \begin{center}
 \includegraphics[scale=0.25]{figure/dataset.png}
 \end{center}
-
 \caption{\label{fig:Dataset-that-will}Dataset that will be used to assess
 \texttt{stable k-means}}
-
 \end{figure}
 
 
@@ -268,11 +266,8 @@ distribution (Figure \ref{fig:Histograms-of-Similarity}).
 \begin{center}
 \includegraphics[scale=0.35]{figure/histogram.png}
 \end{center}
-
 \caption{\label{fig:Histograms-of-Similarity}Histograms of Similarity scores
 for different ks.}
-
-
 \end{figure*}
 
 
@@ -294,7 +289,6 @@ that we run in num\_subsamples does not affect the time complexity.
 \begin{center}
 \includegraphics[scale=0.35]{figure/serial.png}
 \end{center}
-
 \caption{\label{fig:Serial-Run-Time}Serial Run Time}
 \end{figure}
 
@@ -316,11 +310,8 @@ core and hence the speedups and speed downs.
 \includegraphics[scale=0.35]{figure/mt_mp_ss_comp.png} \\
 \includegraphics[scale=0.35]{figure/mt_mp_ws_comp.png}
 \end{center}
-
 \caption{\label{fig:Strong-and-Weak}Strong and Weak Scaling Comparison for
 Multithreading and Multiprocessing}
-
-
 \end{figure}
 
 
