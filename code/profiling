@@ -1,0 +1,59 @@
+ncalls   tottime   percall   cumtime   percall   filename:lineno(function)
+1    0.000    0.000   10.353   10.353   <string>:1(<module>)
+6    0.000    0.000    0.000    0.000   Queue.py:107(put)
+6    0.000    0.000    0.000    0.000   Queue.py:204(_put)
+1    0.000    0.000    0.020    0.020   __init__.py:109(cpu_count)
+6    0.000    0.000    0.000    0.000   abstract_launcher.py:128(__map)
+6    0.000    0.000    0.000    0.000   ioloop.py:928(add_callback)
+12    0.000    0.000    0.000    0.000   iostream.py:227(_is_master_process)
+12    0.000    0.000    0.000    0.000   iostream.py:240(_schedule_flush)
+12    0.000    0.000    0.000    0.000   iostream.py:308(write)
+6    0.000    0.000    0.000    0.000   mp_helper.py:12(starargs)
+7    0.000    0.000    0.000    0.000   multiprocessing.py:111(_serve)
+6    0.000    0.000   10.332    1.722   multiprocessing.py:130(map)
+1    0.000    0.000    0.020    0.020   multiprocessing.py:85(__init__)
+6    0.000    0.000   10.332    1.722   pool.py:246(map)
+6    0.000    0.000    0.000    0.000   pool.py:298(map_async)
+6    0.000    0.000    0.000    0.000   pool.py:537(__init__)
+6    0.000    0.000   10.332    1.722   pool.py:552(wait)
+6    0.000    0.000   10.332    1.722   pool.py:560(get)
+6    0.000    0.000    0.000    0.000   pool.py:589(__init__)
+6    0.000    0.000    0.000    0.000   posix.py:53(wake)
+1    0.000    0.000   10.353   10.353   stable_kmeans.py:18(fit)
+6    0.000    0.000    0.000    0.000   stack_context.py:253(wrap)
+6    0.000    0.000    0.000    0.000   threading.py:242(Condition)
+6    0.000    0.000    0.000    0.000   threading.py:260(__init__)
+6    0.000    0.000    0.000    0.000   threading.py:294(_release_save)
+6    0.000    0.000    0.000    0.000   threading.py:297(_acquire_restore)
+12    0.000    0.000    0.010    0.001   threading.py:300(_is_owned)
+6    0.000    0.000   10.332    1.722   threading.py:309(wait)
+6    0.000    0.000    0.000    0.000   threading.py:373(notify)
+6    0.000    0.000    0.000    0.000   threading.py:59(__init__)
+12    0.000    0.000    0.000    0.000   threading.py:64(_note)
+12    0.000    0.000    0.000    0.000   utf_8.py:15(decode)
+12    0.000    0.000    0.000    0.000   {_codecs.utf_8_decode}
+6    0.000    0.000    0.000    0.000   {divmod}
+12    0.000    0.000    0.000    0.000   {hasattr}
+12    0.000    0.000    0.000    0.000   {isinstance}
+25    0.000    0.000    0.000    0.000   {len}
+6    0.000    0.000    0.000    0.000   {max}
+42   10.332    0.246   10.332    0.246   {method 'acquire' of 'thread.lock' objects}
+6    0.000    0.000    0.000    0.000   {method 'append' of 'collections.deque' objects}
+12    0.000    0.000    0.000    0.000   {method 'append' of 'list' objects}
+12    0.000    0.000    0.000    0.000   {method 'decode' of 'str' objects}
+1    0.000    0.000    0.000    0.000   {method 'disable' of '_lsprof.Profiler' objects}
+6    0.000    0.000    0.000    0.000   {method 'extend' of 'list' objects}
+6    0.000    0.000    0.000    0.000   {method 'format' of 'str' objects}
+8    0.000    0.000    0.000    0.000   {method 'get' of 'dict' objects}
+2    0.000    0.000    0.000    0.000   {method 'has_key' of 'dict' objects}
+1    0.017    0.017    0.017    0.017   {method 'read' of 'file' objects}
+24    0.000    0.000    0.000    0.000   {method 'release' of 'thread.lock' objects}
+6    0.000    0.000    0.000    0.000   {method 'remove' of 'list' objects}
+12    0.000    0.000    0.000    0.000   {method 'write' of '_io.StringIO' objects}
+6    0.000    0.000    0.000    0.000   {method 'write' of 'file' objects}
+12    0.000    0.000    0.000    0.000   {posix.getpid}
+1    0.003    0.003    0.003    0.003   {posix.popen}
+13    0.000    0.000    0.000    0.000   {range}
+12    0.000    0.000    0.000    0.000  {thread.allocate_lock}
+6    0.000    0.000    0.000    0.000   {thread.get_ident}
+12    0.000    0.000    0.000    0.000   {time.time}
