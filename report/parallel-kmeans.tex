@@ -56,7 +56,8 @@
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-Abstract...
+We explore parallelization of the \texttt{stable k-means} algorithm, proposed by Ben-Hur et al. [2001] to determine the optimal number of clusters in unlabeled data. We focus on using Python's native multiprocessing module, which accommodates multithreading and multiprocessing, to parallelize the serial algorithm. In experiments on simulated data, we demonstrate a 1.3 times speed-up for the multithread algorithm and a 3.3 times speed-up for the multiprocess algorithm. A profiling of parallel \texttt{stable k-means} shows that significant time is spent in waiting and acquiring the lock to write to the array. We discuss attempts at optimizing the parallel version, challenges faced during parallelization, and suggest opportunities for speed-up and scalability.  
+
 \end{abstract}
 
 \footnotetext[1]{The code used for this project is available on Github: \url{https://github.com/plumSemPy/parallel_kmeans}.}
@@ -73,11 +74,11 @@ Unsupervised learning is a branch of machine learning that infers patterns from 
 \] Given $k$ initial centers chosen uniformly at random from the data points, $k$-means alternates between two steps until convergence: (\textit{assignment step}) each point is assigned to the nearest cluster center and; (\textit{update step}) each center is recomputed as the center of mass of all points assigned to it.
 
 \
-There are are several methods to determine the optimal number of clusters in unlabeled data. One way is to use different clustering metics such as the silhouette coefficient \cite{aranganayagi2007}. Another approach --- which is the subject of this project --- is stability \cite{ben2001}\cite{smith1980}. As we will later discuss, assessing stability requires multiple runs of $k$-means, which will make it computationally very expensive. Algorithms that speed up the selection of $k$ initial centers have been proposed, such as {\texttt{k-means++}}, which chooses only the first cluster center uniformly at random, and selects subsequent centers from the data points, weighed by a probability proportional to its contribution to the overall error \cite{arthur2007}. Bahmani et al. \cite{bahmani2012} propose a method of parallelizing the initialization that reduces the number of passes by sampling $O(k)$ points and for $O (\log n)$ rounds, instead of sampling a single point in each pass.\footnote{$k$-means is NP-hard, and can be solved in time  $O (n^{dk +1} \log n)$, where $n$ is the number of points in $d$ dimensions.}
+There are are several methods to determine the optimal number of clusters in unlabeled data. One way is to use different clustering metics such as the silhouette coefficient \cite{aranganayagi2007}. Another approach --- which is the subject of this project --- is stability \cite{ben2001}\cite{smith1980}. As we will later discuss, assessing stability requires multiple runs of $k$-means, which will make it computationally very expensive. Algorithms that speed up the selection of $k$ initial centers have been proposed, such as {\texttt{k-means++}}, which chooses only the first cluster center uniformly at random, and selects subsequent centers from the data points, weighed by a probability proportional to its contribution to the overall error \cite{arthur2007}. Bahmani et al. \cite{bahmani2012} propose a method of parallelizing the initialization that reduces the number of passes by sampling $O(k)$ points and for $O (\log n)$ rounds, instead of sampling a single point in each pass.%\footnote{$k$-means is NP-hard, and can be solved in time  $O (n^{dk +1} \log n)$, where $n$ is the number of points in $d$ dimensions.}
 
-Given that Python is one of the most popular coding languages for doing data science, we explore the options of parallelization of \texttt{stable k-means} in Python.\footnote{In this report by Python, Python 2 is meant and not Python 3.} We will take a look at our options in using parallelization in Python and analyze them briefly. As we will discover Python is not the ideal platform for parallel programming, so why bother? The reason is that Python is a very high level language with many good data types, databases, text parsing and many other capabilities that allow for complicated algorithms. One of the simplest functions we have in our \texttt{stable k-means} algorithm is generating an array of random numbers. In the snippet in Section \ref{py-compare} we see a comparison of this same task in C++ and Python. Thus it is a waste not to use Python's Parallel capabilities for speed ups, solely for the reason that they are not ideal. While we will mainly focus on Python in this project, it is entirely possible to use \texttt{Ctypes} in Python and get even higher performances using C extensions.
+Given that Python is one of the most popular coding languages for doing data science, we explore the options of parallelization of the stability-based method, \texttt{stable k-means}, in Python. We will take a look at our options in using parallelization in Python and analyze them briefly. As we will discover Python is not the ideal platform for parallel programming, so why bother? The reason is that Python is a very high level language with many good data types, databases, text parsing and many other capabilities that allow for complicated algorithms. One of the simplest functions we have in our \texttt{stable k-means} algorithm is generating an array of random numbers. In the snippet in Section \ref{py-compare} we see a comparison of this same task in C++ and Python. Thus it is a waste not to use Python's Parallel capabilities for speed ups, solely for the reason that they are not ideal. While we will mainly focus on Python in this project, it is entirely possible to use \texttt{Ctypes} in Python and get even higher performances using C extensions.
 
-We describe the serial version of \texttt{stable k-means} in Section \ref{section:stable} and its parallel implementation using Python in Section \ref{parallel} . We then describe the implementation on simulated data in Section \ref{implementation}. We discuss challenges and future directions in Section \ref{challenges} and draw conclusions in Section \ref{conclusion}.
+We describe the serial version of \texttt{stable k-means} in Section \ref{section:stable} and its parallel implementation using Python in Section \ref{parallel} . We then describe the implementation on simulated data in Section \ref{implementation}. We profile the parallel algorithm in Section \ref{profiling} and discuss attempts at optimization in Section \ref{optimization}. We discuss challenges and future directions in Section \ref{challenges} and draw conclusions in Section \ref{conclusion}.
 
 \section{Serial \texttt{stable k-means}} \label{section:stable}
 
@@ -87,11 +88,9 @@ Ben-Hur et al. \cite{ben2001} propose an algorithm for any clustering mechanism 
 
 Let labeling $\mathcal{L}$ be a partition of $X$ into $k$ subsets $S_1, S_2, ... , S_k$. In that case the correlation score between the clustering of intersection of two subsamples is given by: 
 
-\[
-\Corr(\mathcal{L}_1, \mathcal{L}_2) = \frac{\langle \mathcal{L}_1, \mathcal{L}_2 \rangle}{\sqrt{\langle \mathcal{L}_1,\mathcal{L}_1\rangle \langle \mathcal{L}_2,\mathcal{L}_2\rangle}}
-\]
-
-The algorithm for \texttt{stable k-means} is displayed in Algorithm \ref{alg:stability}.
+$
+\Corr(\mathcal{L}_1, \mathcal{L}_2) = \frac{\langle \mathcal{L}_1, \mathcal{L}_2 \rangle}{\sqrt{\langle \mathcal{L}_1,\mathcal{L}_1\rangle \langle \mathcal{L}_2,\mathcal{L}_2\rangle}}.
+$ The algorithm for \texttt{stable k-means} is displayed in Algorithm \ref{alg:stability}.
 
 \begin{algorithm}[H] 
 \textbf{Input}: $X$ \{a dataset\}, $k_{max}$ \{maximum number of
@@ -134,7 +133,7 @@ Given this algorithm, for each $k$, a distribution of scores will be attained. T
 
 \section{Parallelization} \label{parallel}
 
-In this project we will be focusing on using Python's native multiprocessing module which accommodates multithreading and multiprocessing. In the following sections we will take a closer look on how each of the function.
+In this project we will be focusing on using Python's native multiprocessing module, which accommodates multithreading and multiprocessing. In the following sections we will take a closer look on how each of the function.
 
 \subsection{Threading and the GIL}
 
@@ -248,7 +247,7 @@ and processes.
 
 \section{Experiments} \label{implementation}
 
-We will run our algorithm and compare its results on a toy dataset
+We run our algorithm and compare its results on a toy dataset
 of 500 samples and 2 features. The dataset is plotted in Figure \ref{fig:Dataset-that-will}. The dataset is obviously split into 5 clusters at most. Running the
 algorithm on this dataset will yield the following similarity scoring
 distribution (Figure \ref{fig:Histograms-of-Similarity}).
@@ -267,7 +266,7 @@ distribution (Figure \ref{fig:Histograms-of-Similarity}).
 \includegraphics[scale=0.35]{figure/histogram.png}
 \end{center}
 \caption{\label{fig:Histograms-of-Similarity}Histograms of Similarity scores
-for different ks.}
+for different values of $k$.}
 \end{figure*}
 
 
@@ -280,17 +279,17 @@ In that each process runs a subsampling, clustering and a similarity
 scoring. They all then write their outputs to one shared array. Thus
 each processes or thread will run number\_of\_samples/(number\_of\_processes
 or number\_of\_threads) times. Figure \ref{fig:Serial-Run-Time} shows
-the baseline serial run time. The time complexity of $k$-means is $O(n^{dk+1}\log n$.
+the baseline serial run time. The time complexity of $k$-means is $O(n^{dk+1})\log n$.
 Since we are doing a loop over $k=2$ to$ k=K$ then our complexity will
 go to $O(n^{dk_1}+n^{dk_2}+ ... +n^{dK})n \log n$. Note that the fact
 that we run in num\_subsamples does not affect the time complexity. 
 
-\begin{figure}[htbp] 
+\begin{figure*}[htbp] 
 \begin{center}
-\includegraphics[scale=0.35]{figure/serial.png}
+\includegraphics[scale=0.65]{figure/serial.png}
 \end{center}
 \caption{\label{fig:Serial-Run-Time}Serial Run Time}
-\end{figure}
+\end{figure*}
 
 
 Figure \ref{fig:Strong-and-Weak} shows the strong and weak scaling
@@ -305,17 +304,17 @@ we aren't able to tune the size up to attain a good weak scaling.
 It looks as though the OS is scheduling one process or thread per
 core and hence the speedups and speed downs.
 
-\begin{figure}[htbp] 
+\begin{figure*}[htbp] 
 \begin{center}
-\includegraphics[scale=0.35]{figure/mt_mp_ss_comp.png} \\
-\includegraphics[scale=0.35]{figure/mt_mp_ws_comp.png}
+\includegraphics[scale=0.45]{figure/mt_mp_ss_comp.png} \\
+\includegraphics[scale=0.45]{figure/mt_mp_ws_comp.png}
 \end{center}
 \caption{\label{fig:Strong-and-Weak}Strong and Weak Scaling Comparison for
 Multithreading and Multiprocessing}
-\end{figure}
+\end{figure*}
 
 
-Figure \ref{fig:Speed-up-Comparison} below shows a comparison of
+Figure \ref{fig:Speed-up-Comparison} shows a comparison of
 the run time on the serial, concurrent (multithread) and parallel
 (multiprocess) code. The sample size varies between 100 to 500 samples
 and 3 threads and processes are taken to do the comparison as they
@@ -323,13 +322,48 @@ were the optimal on the previous part. From the serial implementation
 and 500 samples we have a 1.3 times speed up for the multithread algorithm
 and a 3.3 times speed up for the multiprocess algorithm.
 
-\begin{figure}[htbp] 
+\begin{figure*}[htbp] 
 \begin{center}
-\includegraphics[scale=0.35]{figure/runtime_comparison.png}
+\includegraphics[scale=0.65]{figure/runtime_comparison.png}
 \end{center}
 \caption{\label{fig:Speed-up-Comparison}Speed up Comparison}
-\end{figure}
+\end{figure*}
 
+\section{Profiling}  \label{profiling}
+
+We profiled our algorithm to see where the time was wasted. The result
+is shown in Figure \ref{fig:Profiling-of-the}. As seen most of the
+time is spent on either acquiring the lock or waiting on the lock.
+The full profiling output can be reviewed in Appendix Section \ref{profiling-output}. 
+
+\begin{figure*}[htbp] 
+\begin{center}
+\includegraphics[scale=0.45]{figure/Profiling.png}
+\end{center}
+\caption{\label{fig:Profiling-of-the}Profiling of the code}
+\end{figure*}
+
+
+\section{Optimization}  \label{optimization}
+
+To counter the effect of the shared array that we saw while profiling
+our code, we did the following. In the implementation mentioned above,
+all the processes and threads write their outputs after every operation
+to a global shared array. That was because every process was running
+the inner most loop of a three-nested-loop system. To remedy this
+we rearranged the loops such that each process will run $\frac{1}{P}$
+of the workload in \textit{all }the processes and threads. In multithreading
+this resulted in a worse performance. However in multiprocessing this
+improved the results a bit. This can be seen in Figure \ref{fig:Improvement-runtime-comparisons},
+where ``Sep'' means the optimized algorithm.
+
+\begin{figure*}[htbp] 
+\begin{center}
+\includegraphics[scale=0.65]{figure/Ultimate_comparison.png}
+\end{center}
+\caption{\label{fig:Improvement-runtime-comparisons}Improvement runtime comparisons}
+
+\end{figure*}
 
 \section{Challenges and Future Directions} \label{challenges}
 
@@ -377,12 +411,14 @@ needs to revamp its use pipeline. We attempted parallelizing a very
 useful algorithm that returns the optimal number of clusters in a
 given dataset. The results show that we can attain very decent speed-ups using multiprocessing on an average machine.
 
+\onecolumn
+\clearpage
 {\small
 \bibliographystyle{ieee}
 \bibliography{refs}
 }
 
-\clearpage
+
 \begin{appendices}
 
 \section{Python vs. C++ comparison} \label{py-compare} 
@@ -420,7 +456,7 @@ choice and hence the non-unimodal histograms.
 
 \begin{figure}[htbp] 
 \begin{center}
-\includegraphics[scale=0.45]{figure/2_formation.png}
+\includegraphics[scale=0.65]{figure/2_formation.png}
 \end{center}
 
 \caption{\label{fig:2-Clusters-Formation}2 Clusters Formation}
@@ -429,27 +465,27 @@ choice and hence the non-unimodal histograms.
 \end{figure}
 
 
-\begin{figure*}[htbp] 
+\begin{figure}[htbp] 
 \begin{center}
-\includegraphics[scale=0.45]{figure/3_formation.png}
+\includegraphics[scale=0.55]{figure/3_formation.png}
 \end{center}
 
 \caption{\label{fig:3-Clusters-Formation}3 Clusters Formation}
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}[htbp] 
+\begin{figure}[htbp] 
 \begin{center}
-\includegraphics[scale=0.45]{figure/4_formation.png}
+\includegraphics[scale=0.55]{figure/4_formation.png}
 \end{center}
 
 \caption{\label{fig:4-Cluster-Formation}4 Cluster Formation}
 
 
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}[htbp] 
+\begin{figure}[htbp] 
 \begin{center}
 \includegraphics[scale=0.45]{figure/5_fomration.png}
 \end{center}
@@ -457,18 +493,85 @@ choice and hence the non-unimodal histograms.
 \caption{\label{fig:5-Cluster-Formation}5 Cluster Formation}
 
 
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}[htbp] 
+\begin{figure}[htbp] 
 \begin{center}
-\includegraphics[scale=0.45]{figure/6_formation.png}
+\includegraphics[scale=0.55]{figure/6_formation.png}
 \end{center}
 
 \caption{\label{fig:6-Cluster-Formation}6 Cluster Formation}
 
 
-\end{figure*}
+\end{figure}
+
+\onecolumn
+\section{Full Profiling Output} \label{profiling-output}
+
+\begin{verbatim}
+ncalls   tottime   percall   cumtime   percall   filename:lineno(function)
+1    0.000    0.000   10.353   10.353   <string>:1(<module>)
+6    0.000    0.000    0.000    0.000   Queue.py:107(put)
+6    0.000    0.000    0.000    0.000   Queue.py:204(_put)
+1    0.000    0.000    0.020    0.020   __init__.py:109(cpu_count)
+6    0.000    0.000    0.000    0.000   abstract_launcher.py:128(__map)
+6    0.000    0.000    0.000    0.000   ioloop.py:928(add_callback)
+12    0.000    0.000    0.000    0.000   iostream.py:227(_is_master_process)
+12    0.000    0.000    0.000    0.000   iostream.py:240(_schedule_flush)
+12    0.000    0.000    0.000    0.000   iostream.py:308(write)
+6    0.000    0.000    0.000    0.000   mp_helper.py:12(starargs)
+7    0.000    0.000    0.000    0.000   multiprocessing.py:111(_serve)
+6    0.000    0.000   10.332    1.722   multiprocessing.py:130(map)
+1    0.000    0.000    0.020    0.020   multiprocessing.py:85(__init__)
+6    0.000    0.000   10.332    1.722   pool.py:246(map)
+6    0.000    0.000    0.000    0.000   pool.py:298(map_async)
+6    0.000    0.000    0.000    0.000   pool.py:537(__init__)
+6    0.000    0.000   10.332    1.722   pool.py:552(wait)
+6    0.000    0.000   10.332    1.722   pool.py:560(get)
+6    0.000    0.000    0.000    0.000   pool.py:589(__init__)
+6    0.000    0.000    0.000    0.000   posix.py:53(wake)
+1    0.000    0.000   10.353   10.353   stable_kmeans.py:18(fit)
+6    0.000    0.000    0.000    0.000   stack_context.py:253(wrap)
+6    0.000    0.000    0.000    0.000   threading.py:242(Condition)
+6    0.000    0.000    0.000    0.000   threading.py:260(__init__)
+6    0.000    0.000    0.000    0.000   threading.py:294(_release_save)
+6    0.000    0.000    0.000    0.000   threading.py:297(_acquire_restore)
+12    0.000    0.000    0.010    0.001   threading.py:300(_is_owned)
+6    0.000    0.000   10.332    1.722   threading.py:309(wait)
+6    0.000    0.000    0.000    0.000   threading.py:373(notify)
+6    0.000    0.000    0.000    0.000   threading.py:59(__init__)
+12    0.000    0.000    0.000    0.000   threading.py:64(_note)
+12    0.000    0.000    0.000    0.000   utf_8.py:15(decode)
+12    0.000    0.000    0.000    0.000   {_codecs.utf_8_decode}
+6    0.000    0.000    0.000    0.000   {divmod}
+12    0.000    0.000    0.000    0.000   {hasattr}
+12    0.000    0.000    0.000    0.000   {isinstance}
+25    0.000    0.000    0.000    0.000   {len}
+6    0.000    0.000    0.000    0.000   {max}
+42   10.332    0.246   10.332    0.246   {method 'acquire' of 'thread.lock' objects}
+6    0.000    0.000    0.000    0.000   {method 'append' of 'collections.deque' objects}
+12    0.000    0.000    0.000    0.000   {method 'append' of 'list' objects}
+12    0.000    0.000    0.000    0.000   {method 'decode' of 'str' objects}
+1    0.000    0.000    0.000    0.000   {method 'disable' of '_lsprof.Profiler' objects}
+6    0.000    0.000    0.000    0.000   {method 'extend' of 'list' objects}
+6    0.000    0.000    0.000    0.000   {method 'format' of 'str' objects}
+8    0.000    0.000    0.000    0.000   {method 'get' of 'dict' objects}
+2    0.000    0.000    0.000    0.000   {method 'has_key' of 'dict' objects}
+1    0.017    0.017    0.017    0.017   {method 'read' of 'file' objects}
+24    0.000    0.000    0.000    0.000   {method 'release' of 'thread.lock' objects}
+6    0.000    0.000    0.000    0.000   {method 'remove' of 'list' objects}
+12    0.000    0.000    0.000    0.000   {method 'write' of '_io.StringIO' objects}
+6    0.000    0.000    0.000    0.000   {method 'write' of 'file' objects}
+12    0.000    0.000    0.000    0.000   {posix.getpid}
+1    0.003    0.003    0.003    0.003   {posix.popen}
+13    0.000    0.000    0.000    0.000   {range}
+12    0.000    0.000    0.000    0.000  {thread.allocate_lock}
+6    0.000    0.000    0.000    0.000   {thread.get_ident}
+12    0.000    0.000    0.000    0.000   {time.time}
+\end{verbatim}
+
+
 
 \end{appendices}
 
