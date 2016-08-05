@@ -5,4 +5,4 @@ This project was done in Python and used Python's multiprocessing module compari
 
 The [code](https://github.com/plumSemPy/parallel_kmeans/blob/master/code/stable_kmeans.py) is showcased [here](https://github.com/plumSemPy/parallel_kmeans/blob/master/code/Plots_better.ipynb). 
 
-Since the plots were in [bokeh](http://bokeh.pydata.org/en/latest/), they have problem rendering in Github. They are shown as statis images here.
+Since the plots were in [bokeh](http://bokeh.pydata.org/en/latest/), they have problem rendering in Github. They are shown as statis images [here](https://github.com/plumSemPy/parallel_kmeans/tree/master/Figures).
